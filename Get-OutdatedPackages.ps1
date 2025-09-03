@@ -1,6 +1,7 @@
 function Get-OutdatedPackages {
     param(
-        [switch]$Major
+        [switch]$Major,
+        [switch]$ExportCSV
     )
 
     $solution = Get-ChildItem -Filter *.sln | Select-Object -First 1
@@ -54,5 +55,17 @@ function Get-OutdatedPackages {
         }
     }
 
-    $packages | Sort-Object Package -Unique | Format-Table -AutoSize
+    # Sort the packages
+    $sortedPackages = $packages | Sort-Object Package -Unique
+
+    # Export to CSV if requested
+    if ($ExportCSV) {
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $filename = "outdated-packages-$timestamp.csv"
+        $sortedPackages | Export-Csv -Path $filename -NoTypeInformation
+        Write-Host "Results exported to: $filename" -ForegroundColor Green
+    }
+
+    # Display results in console
+    $sortedPackages | Format-Table -AutoSize
 }
